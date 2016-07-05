@@ -2,9 +2,26 @@ import optparse
 import tokenize
 import warnings
 
-from flake8.engine import pep8
-
 from flake8_quotes.__about__ import __version__
+
+try:
+    from flake8.utils import stdin_get_value
+    from flake8.processor import FileProcessor
+
+    def readlines(filename):
+        class DummyOptions(object):
+            hang_closing = 42
+            max_line_length = 42
+            verbose = False
+
+        processor = FileProcessor(filename, DummyOptions())
+        return processor.read_lines()
+
+except ImportError:
+    # On Flake8 2.x flake8.utils doesn't exist, so fallback to the pep8 one
+    from flake8.engine import pep8
+    stdin_get_value = pep8.stdin_get_value
+    readlines = pep8.readlines
 
 
 class QuoteChecker(object):
@@ -72,9 +89,9 @@ class QuoteChecker(object):
 
     def get_file_contents(self):
         if self.filename in ('stdin', '-', None):
-            return pep8.stdin_get_value().splitlines(True)
+            return stdin_get_value().splitlines(True)
         else:
-            return pep8.readlines(self.filename)
+            return readlines(self.filename)
 
     def run(self):
         file_contents = self.get_file_contents()
