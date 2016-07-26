@@ -95,6 +95,7 @@ class QuoteChecker(object):
 
         for error in errors:
             if error.get('line') not in noqa_line_numbers:
+                print(error)
                 yield (error.get('line'), error.get('col'), error.get('message'), type(self))
 
     def get_noqa_lines(self, file_contents):
